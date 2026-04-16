@@ -1,0 +1,71 @@
+# 1. Создать двух пользователей
+from django.contrib.auth.models import User
+user1 = User.objects.create_user('Alex')
+user2 = User.objects.create_user('Mike')
+
+# 2. Создать два объекта модели Author
+from news.models import Author
+author1 = Author.objects.create(user=user1)
+author2 = Author.objects.create(user=user2)
+
+# 3. Добавить 4 категории
+from news.models import Category
+cat1 = Category.objects.create(name='Спорт')
+cat2 = Category.objects.create(name='Политика')
+cat3 = Category.objects.create(name='Образование')
+cat4 = Category.objects.create(name='Технологии')
+
+# 4. Добавить 2 статьи и 1 новость
+from news.models import Post
+post1 = Post(author=author1, post_type='AR', title='Польза регулярного чтения', text='Чтение книг развивает мышление, расширяет словарный запас и снижает уровень стресса.')
+post1.save()
+post2 = Post(author=author2, post_type='AR', title='Советы для начинающих программистов', text='Изучайте основы, пишите код каждый день, не бойтесь ошибок.')
+post2.save()
+post3 = Post(author=author1, post_type='NW', title='Открытие новой школы программирования', text='В центре города открылась новая школа программирования.')
+post3.save()
+
+# 5. Присвоить категории (у новости post3 две категории)
+from news.models import PostCategory
+PostCategory.objects.create(post=post1, category=cat1)
+PostCategory.objects.create(post=post2, category=cat3)
+PostCategory.objects.create(post=post3, category=cat2)
+PostCategory.objects.create(post=post3, category=cat4)
+
+# 6. Создать минимум 4 комментария (в каждом объекте Post минимум 1 комментарий)
+from news.models import Comment
+comm1 = Comment.objects.create(post=post1, user=user1, text='Отличная статья! Очень познавательно.')
+comm2 = Comment.objects.create(post=post1, user=user2, text='Спасибо, буду применять на практике.')
+comm3 = Comment.objects.create(post=post2, user=user1, text='Полезные советы для новичков!')
+comm4 = Comment.objects.create(post=post3, user=user2, text='Новость отличная, ждем открытия!')
+
+# 7. Применить like() и dislike() к постам и комментариям
+post1.like()
+post1.like()
+post2.like()
+post3.like()
+post1.dislike()
+post3.dislike()
+comm1.like()
+comm2.like()
+comm3.like()
+comm4.like()
+comm4.like()
+comm2.dislike()
+comm3.dislike()
+
+# 8. Обновить рейтинги пользователей
+author1.update_rating()
+author2.update_rating()
+
+# 9. Вывести лучшего пользователя
+best_author = Author.objects.order_by('-rating').first()
+print(f'Лучший пользователь: {best_author.user.username}, рейтинг: {best_author.rating}')
+
+# 10. Вывести лучшую статью
+best_post = Post.objects.order_by('-rating').first()
+print(f'Дата: {best_post.time_in}, Автор: {best_post.author.user.username}, Рейтинг: {best_post.rating}, Заголовок: {best_post.title}, Превью: {best_post.preview()}')
+
+# 11. Вывести все комментарии к лучшей статье
+comments = Comment.objects.filter(post=best_post)
+for c in comments:
+    print(f'Дата: {c.time_in}, Пользователь: {c.user.username}, Рейтинг: {c.rating}, Текст: {c.text}')
