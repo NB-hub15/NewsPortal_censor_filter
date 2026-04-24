@@ -44,4 +44,8 @@
         {% endif %}
     {% endif %}
 
+    {% if is_not_author %}
+    <button> <a href="/news/upgrade/"> Стать автором!</a> </button>
+    {% endif %}
+
 {% endblock content %}
