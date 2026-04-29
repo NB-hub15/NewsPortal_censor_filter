@@ -5,5 +5,20 @@
 {% block content %}
 <h1>{{ post.title }}</h1>
 <p>{{ post.time_in|date:"d.m.Y" }}</p>
+
+<p>Категории:
+    {% for category in post.categories.all %}
+        <a href="#">#{{ category.name }}</a>
+        {% if user.is_authenticated %}
+            {% if user in category.subscribers.all %}
+                <a href="{% url 'subscribe' category.id %}" class="btn btn-sm btn-secondary">Отписаться</a>
+            {% else %}
+                <a href="{% url 'subscribe' category.id %}" class="btn btn-sm btn-primary">Подписаться</a>
+            {% endif %}
+        {% endif %}
+        {% if not forloop.last %}, {% endif %}
+    {% endfor %}
+</p>
+
 <p>{{ post.content|censor }}</p>
 {% endblock content %}

@@ -3,10 +3,11 @@ from .views import (
     NewsList, NewsDetail, NewsSearch,
     NewsCreate, NewsUpdate, NewsDelete
 )
-from .views import upgrade_me
+from .views import upgrade_me, subscribe_to_category
 
 urlpatterns = [
     path('upgrade/', upgrade_me, name='upgrade'),
+    path('category/<int:pk>/subscribe/', subscribe_to_category, name='subscribe'),
     path('', NewsList.as_view(), name='news_list'),
     path('<int:pk>/', NewsDetail.as_view(), name='news_detail'),
     path('search/', NewsSearch.as_view(), name='news_search'),

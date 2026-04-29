@@ -1,13 +1,25 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django_filters.views import FilterView
-from .models import Post
+from .models import Post, Category
 from .filters import PostFilter
 from .forms import PostForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.shortcuts import redirect
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+
+
+@login_required
+def subscribe_to_category(request, pk):
+    category = Category.objects.get(pk=pk)
+    if request.user in category.subscribers.all():
+        category.subscribers.remove(request.user)
+    else:
+        category.subscribers.add(request.user)
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 @login_required
@@ -58,7 +70,9 @@ class NewsCreate(PermissionRequiredMixin, CreateView):
     def form_valid(self, form):
         post = form.save(commit=False)
         post.post_type = 'NW'
-        return super().form_valid(form)
+        post.save()
+        form.save_m2m()
+        return redirect(post.get_absolute_url())
 
 
 class NewsUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
