@@ -1,10 +1,9 @@
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
 from django.utils import timezone
 from .models import Post
+from .tasks import send_post_notification
 
 
 @receiver(m2m_changed, sender=Post.categories.through)
@@ -24,20 +23,4 @@ def notify_subscribers(sender, instance, action, **kwargs):
                 'Нельзя публиковать более 3 новостей в сутки.'
             )
 
-        for category in instance.categories.all():
-            for subscriber in category.subscribers.all():
-                html_content = render_to_string(
-                    'email_news.html',
-                    {
-                        'post': instance,
-                        'username': subscriber.username,
-                    }
-                )
-                msg = EmailMultiAlternatives(
-                    subject=instance.title,
-                    body='',
-                    from_email=None,
-                    to=[subscriber.email],
-                )
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
+        send_post_notification.delay(instance.pk)
